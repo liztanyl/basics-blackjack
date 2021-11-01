@@ -105,19 +105,63 @@ var sumHand = function (hand) {
   return sum;
 };
 
+var isHandBlackjack = function (hand) {
+  // If either card is Ace and the other is 10/J/Q/K, return true
+  // if card 1 = ace and card 2 = 10/J/Q/K OR
+  // if card 1 = 10/J/Q/K and card 2 = ace
+  console.log("Checking if hand is blackjack");
+  if (
+    (hand[0].rank == 1 || hand[1].rank == 1) &&
+    (hand[0].rank == 10 ||
+      hand[0].rank == 11 ||
+      hand[0].rank == 12 ||
+      hand[0].rank == 13 ||
+      hand[1].rank == 10 ||
+      hand[1].rank == 11 ||
+      hand[1].rank == 12 ||
+      hand[1].rank == 13)
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
 // Function to compare sums of hands
 var compareHands = function (player, dealer) {
-  var playerHand = sumHand(player);
-  var dealerHand = sumHand(dealer);
-  console.log("Player's hand: ", playerCards, playerHand);
-  console.log("Dealer's hand: ", dealerCards, dealerHand);
-  var result = `draw`;
-  if (playerHand > dealerHand) {
-    result = `player wins`;
-    return result;
-  } else {
-    result = `dealer wins`;
-    return result;
+  // If player got blackjack, and dealer also blackjack - tie
+  // If player has blackjack, but dealer doesn't - player wins
+  // If player doesn't have blackjack, but dealer has - dealer wins
+  // If player doesn't have blackjack and dealer doesn't have blackjack - compare sum of hands
+  if (isHandBlackjack(player)) {
+    console.log("Player's hand is blackjack");
+    if (isHandBlackjack(dealer)) {
+      console.log("Dealer's hand is also blackjack");
+      return `Both had blackjack!`;
+    } else {
+      console.log("Dealer's hand is not blackjack");
+      return `Player got blackjack. Player wins!`;
+    }
+  } else if (!isHandBlackjack(player)) {
+    console.log("Player's hand is not blackjack");
+    if (isHandBlackjack(dealer)) {
+      console.log("Dealer's hand is blackjack");
+      return `Dealer got blackjack. Dealer wins!`;
+    } else {
+      console.log("Both players did not get blackjack");
+      var playerHand = sumHand(player);
+      var dealerHand = sumHand(dealer);
+      console.log("Player's hand: ", playerCards, playerHand);
+      console.log("Dealer's hand: ", dealerCards, dealerHand);
+      var result = `draw`;
+      if (playerHand > dealerHand) {
+        result = `player wins`;
+        return result;
+      } else {
+        result = `dealer wins`;
+        return result;
+      }
+    }
   }
 };
 
