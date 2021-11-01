@@ -41,16 +41,19 @@ var createDeck = function () {
     "Queen",
     "King",
   ];
+  var cardValues = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10];
   // Create a loop to create cards for each suit
   for (suitIndex = 0; suitIndex < suits.length; suitIndex += 1) {
     var cardSuit = suits[suitIndex];
     // Create a loop to create each card
     for (cardRank = 1; cardRank <= 13; cardRank += 1) {
       var cardName = cardNamesInWords[cardRank];
+      var cardValue = cardValues[cardRank];
       var card = {
         name: cardName,
         suit: cardSuit,
         rank: cardRank,
+        value: cardValue,
       };
       // Add card to deck
       cardDeck.push(card);
@@ -98,28 +101,19 @@ var drawCard = function () {
 var sumHand = function (hand) {
   // Dont understand closures for now so this will do
   var reducerFn = function (previousValue, currentValue) {
-    return previousValue + currentValue.rank;
+    return previousValue + currentValue.value;
   };
   //
   var sum = hand.reduce(reducerFn, 0);
   return sum;
 };
 
+// Function to check if hand is blackjack (Ace & 10/J/Q/K)
 var isHandBlackjack = function (hand) {
-  // If either card is Ace and the other is 10/J/Q/K, return true
-  // if card 1 = ace and card 2 = 10/J/Q/K OR
-  // if card 1 = 10/J/Q/K and card 2 = ace
   console.log("Checking if hand is blackjack");
   if (
-    (hand[0].rank == 1 || hand[1].rank == 1) &&
-    (hand[0].rank == 10 ||
-      hand[0].rank == 11 ||
-      hand[0].rank == 12 ||
-      hand[0].rank == 13 ||
-      hand[1].rank == 10 ||
-      hand[1].rank == 11 ||
-      hand[1].rank == 12 ||
-      hand[1].rank == 13)
+    (hand[0].value == 1 || hand[1].value == 1) &&
+    (hand[0].value == 10 || hand[1].value == 10)
   ) {
     return true;
   } else {
@@ -127,40 +121,54 @@ var isHandBlackjack = function (hand) {
   }
 };
 
+// Function to see if either hand has blackjack
+var checkForBlackjack = function (player, dealer) {
+  // If both not blackjack, return false
+  if (!isHandBlackjack(player) && !isHandBlackjack(dealer)) {
+    console.log("Nobody got blackjack");
+    return false;
+  } else {
+    return true;
+  }
+};
+
 // Function to compare sums of hands
 var compareHands = function (player, dealer) {
-  // If player got blackjack, and dealer also blackjack - tie
-  // If player has blackjack, but dealer doesn't - player wins
-  // If player doesn't have blackjack, but dealer has - dealer wins
-  // If player doesn't have blackjack and dealer doesn't have blackjack - compare sum of hands
-  if (isHandBlackjack(player)) {
-    console.log("Player's hand is blackjack");
-    if (isHandBlackjack(dealer)) {
-      console.log("Dealer's hand is also blackjack");
-      return `Both had blackjack!`;
+  console.log("Player's cards: ", playerCards);
+  console.log("Dealer's cards: ", dealerCards);
+
+  // If both don't have blackjack, compare sum of hands
+  if (!checkForBlackjack(player, dealer)) {
+    var playerHand = sumHand(player);
+    var dealerHand = sumHand(dealer);
+    console.log("Player's hand: ", playerCards, playerHand);
+    console.log("Dealer's hand: ", dealerCards, dealerHand);
+    var result = `draw`;
+    if (playerHand > dealerHand) {
+      result = `player wins`;
+      return result;
     } else {
-      console.log("Dealer's hand is not blackjack");
-      return `Player got blackjack. Player wins!`;
+      result = `dealer wins`;
+      return result;
     }
-  } else if (!isHandBlackjack(player)) {
-    console.log("Player's hand is not blackjack");
-    if (isHandBlackjack(dealer)) {
+  }
+  // If somebody got blackjack -- ?? Can I create a separate function for this ??
+  else {
+    console.log("Someone got blackjack");
+    // If player has blackjack but dealer doesn't
+    if (isHandBlackjack(player) && !isHandBlackjack(dealer)) {
+      console.log("Player's hand is blackjack");
+      return `Player has blackjack. Player wins!`;
+    }
+    // If dealer has blackjack but player doesn't
+    else if (isHandBlackjack(dealer)) {
       console.log("Dealer's hand is blackjack");
-      return `Dealer got blackjack. Dealer wins!`;
-    } else {
-      console.log("Both players did not get blackjack");
-      var playerHand = sumHand(player);
-      var dealerHand = sumHand(dealer);
-      console.log("Player's hand: ", playerCards, playerHand);
-      console.log("Dealer's hand: ", dealerCards, dealerHand);
-      var result = `draw`;
-      if (playerHand > dealerHand) {
-        result = `player wins`;
-        return result;
-      } else {
-        result = `dealer wins`;
-        return result;
-      }
+      return `Dealer has blackjack. Player loses!`;
+    }
+    // If player got blackjack, and dealer also blackjack - tie
+    else {
+      console.log("Both players got blackjack");
+      return `It's a tie! Both player and dealer had blackjack.`;
     }
   }
 };
@@ -169,8 +177,10 @@ var compareHands = function (player, dealer) {
 var main = function (input) {
   var myOutputValue = "";
   newGame(); // creates deck & shuffles cards
-  playerCards.push(drawCard(), drawCard()); // draws 2 cards from top(end) of deck
-  dealerCards.push(drawCard(), drawCard()); // draws 2 cards from top(end) of deck
+  playerCards.push(drawCard()); // deal 1 card from top(end) of deck
+  dealerCards.push(drawCard()); // deal 1 card from top(end) of deck
+  playerCards.push(drawCard()); // deal 1 card from top(end) of deck
+  dealerCards.push(drawCard()); // deal 1 card from top(end) of deck
   myOutputValue = compareHands(playerCards, dealerCards); // compares whose hand has bigger sum of ranks
   return myOutputValue;
 };
