@@ -217,9 +217,12 @@ var compareHands = function (player, dealer) {
   Dealer's cards: ${formatCards(
     dealerCards
   )} ----- Score of ${dealerHand}<br><br>`;
-  // Tie if both hands bust
-  if (didHandBust(playerHand) && didHandBust(dealerHand)) {
-    result += `Both dealer's and player's hands are above 21. It's a draw!`;
+  // Tie if both hands bust or if sumOfHands are the same
+  if (
+    (didHandBust(playerHand) && didHandBust(dealerHand)) ||
+    playerHand == dealerHand
+  ) {
+    result += `It's a draw!`;
   }
   // Player wins if player doesn't bust AND dealer busts or if player's hand is closer to 21
   else if (
@@ -242,7 +245,8 @@ var compareHands = function (player, dealer) {
 var main = function (input) {
   var myOutputValue = "";
   if (mode == "start") {
-    var msg = newGame(); // creates deck & shuffles cards
+    // start game & check if anyone has blackjack
+    var msg = newGame();
 
     myOutputValue += `
     Player's hand: ${formatCards(playerCards)}<br>
