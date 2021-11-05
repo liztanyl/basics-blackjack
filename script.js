@@ -52,14 +52,14 @@ var createDeck = function () {
     for (cardRank = 1; cardRank <= 13; cardRank += 1) {
       var cardName = cardNamesInWords[cardRank];
       var cardValue = cardValues[cardRank];
-      var card = {
+      var newCard = {
         name: cardName,
         suit: cardSuit,
         rank: cardRank,
         value: cardValue,
       };
       // Add card to deck
-      cardDeck.push(card);
+      cardDeck.push(newCard);
     }
   }
   return cardDeck;
@@ -91,15 +91,24 @@ var shuffleCards = function (cardDeck) {
 // Function to format cards in hand
 var formatCards = function (cardArray) {
   // Create a loop to add each card name and card suit to the return value
-  var msg = "";
+  var msgWithFormattedCards = "";
   for (var i = 0; i < cardArray.length; i++) {
-    msg += ` |${cardArray[i].name}${cardArray[i].suit}| `;
+    msgWithFormattedCards += ` |${cardArray[i].name}${cardArray[i].suit}| `;
   }
-  return msg;
+  return msgWithFormattedCards;
 };
 
-// Function to start game (create and shuffle deck)
+// Function to reset deck and player's & dealer's cards to empty arrays
+var resetGame = function () {
+  deck = [];
+  playerCards = [];
+  dealerCards = [];
+};
+
+// Function to start game
+// Create, shuffle deck, give out 2 cards each & check for blackjack
 var newGame = function () {
+  resetGame();
   var newDeck = createDeck();
   deck = shuffleCards(newDeck);
   // give PLAYER 1 card from top of deck (end of array)
@@ -117,7 +126,7 @@ var newGame = function () {
   return "";
 };
 
-// Function to draw card
+// Function to draw card from deck
 var drawCard = function () {
   var card = deck.pop();
   return card;
@@ -136,7 +145,7 @@ var checkForBlackjack = function (hand) {
   }
 };
 
-// Function to see if either hand has blackjack
+// Function to see if either player or dealer has blackjack
 var didAnyoneBlackjack = function (player, dealer) {
   // If both not blackjack, return false
   if (!checkForBlackjack(player) && !checkForBlackjack(dealer)) {
@@ -147,6 +156,7 @@ var didAnyoneBlackjack = function (player, dealer) {
   }
 };
 
+// Function to determine who is the one with blackjack
 var whoGotBlackjack = function (player, dealer) {
   console.log("Someone got blackjack");
   // If player got blackjack, and dealer also blackjack - tie
@@ -172,7 +182,6 @@ var sumHand = function (hand) {
   var reducerFn = function (previousCard, currentCard) {
     return previousCard + currentCard.value;
   };
-  //
   var sum = hand.reduce(reducerFn, 0);
   return sum;
 };
@@ -199,17 +208,34 @@ var doesDealerNeedToDraw = function (sumOfDealersHand) {
 var compareHands = function (player, dealer) {
   var playerHand = sumHand(player);
   var dealerHand = sumHand(dealer);
-  console.log("Player's hand: ", playerCards, playerHand);
-  console.log("Dealer's hand: ", dealerCards, dealerHand);
+  console.log("Player's hand: ", playerCards, "(Sum: ", playerHand, ")");
+  console.log("Dealer's hand: ", dealerCards, "(Sum: ", dealerHand, ")");
 
-  var result = `draw`;
-  if (playerHand > dealerHand && !didHandBust(playerHand)) {
-    result = `player wins`;
-    return result;
-  } else {
-    result = `dealer wins`;
-    return result;
+  var result = `Player's cards: ${formatCards(
+    playerCards
+  )} ----- Score of ${playerHand}<br>
+  Dealer's cards: ${formatCards(
+    dealerCards
+  )} ----- Score of ${dealerHand}<br><br>`;
+  // Tie if both hands bust
+  if (didHandBust(playerHand) && didHandBust(dealerHand)) {
+    result += `Both dealer's and player's hands are above 21. It's a draw!`;
   }
+  // Player wins if player doesn't bust AND dealer busts or if player's hand is closer to 21
+  else if (
+    !didHandBust(playerHand) &&
+    (playerHand > dealerHand || didHandBust(dealerHand))
+  ) {
+    result += `Player wins!`;
+  }
+  // Player loses if dealer doesn't bust AND player busts or if dealer's hand is closer to 21
+  else if (
+    !didHandBust(dealerHand) &&
+    (playerHand < dealerHand || didHandBust(playerHand))
+  ) {
+    result += `Dealer wins!`;
+  }
+  return result;
 };
 
 // Main function
@@ -233,9 +259,14 @@ var main = function (input) {
     Dealer's hand: ${formatCards(dealerCards)}<br><br>
     `;
     } else {
+      // Check if dealer's hand is below 17
+      while (doesDealerNeedToDraw(sumHand(dealerCards))) {
+        dealerCards.push(drawCard());
+      }
+      // compare whose hand has bigger sum of ranks
       myOutputValue += compareHands(playerCards, dealerCards);
+      mode = "start";
     }
-    // compare whose hand has bigger sum of ranks
   }
   return myOutputValue;
 };
