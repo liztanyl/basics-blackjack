@@ -21,6 +21,7 @@ var playerCards = [];
 var dealerCards = [];
 
 var mode = "start";
+var inGameInstructions = `Enter 'd' to draw a card or just click submit to play with your current cards.`;
 
 // ************************ Functions ************************
 // Function to create deck
@@ -109,6 +110,7 @@ var resetGame = function () {
 // Create, shuffle deck, give out 2 cards each & check for blackjack
 var newGame = function () {
   resetGame();
+  var startMsg = inGameInstructions;
   var newDeck = createDeck();
   deck = shuffleCards(newDeck);
   // give PLAYER 1 card from top of deck (end of array)
@@ -121,10 +123,10 @@ var newGame = function () {
   dealerCards.push(drawCard());
   // Should already check for blackjack here!
   if (didAnyoneBlackjack(playerCards, dealerCards)) {
-    return whoGotBlackjack(playerCards, dealerCards);
+    startMsg = whoGotBlackjack(playerCards, dealerCards);
   }
   mode = "play";
-  return "";
+  return startMsg;
 };
 
 // Function to draw card from deck
@@ -236,21 +238,21 @@ var determineWinner = function (player, dealer) {
     (didHandBust(playerHand) && didHandBust(dealerHand)) ||
     playerHand == dealerHand
   ) {
-    result += `It's a draw!`;
+    result += `<b>It's a draw!</b>`;
   }
   // Player wins if player doesn't bust AND dealer busts or if player's hand is closer to 21
   else if (
     !didHandBust(playerHand) &&
     (playerHand > dealerHand || didHandBust(dealerHand))
   ) {
-    result += `Player wins!`;
+    result += `<b>Player wins!</b>`;
   }
   // Player loses if dealer doesn't bust AND player busts or if dealer's hand is closer to 21
   else if (
     !didHandBust(dealerHand) &&
     (playerHand < dealerHand || didHandBust(playerHand))
   ) {
-    result += `Dealer wins!`;
+    result += `<b>Dealer wins!</b>`;
   }
   return result;
 };
@@ -265,14 +267,15 @@ var main = function (input) {
     myOutputValue += `
     Player's hand: ${formatCards(playerCards)}<br>
     Dealer's hand: ${formatCards(dealerCards)}<br><br>
-    ${msg}
+    <b>${msg}</b>
     `;
   } else {
-    if (input == "hit") {
+    if (input == "d") {
       playerCards.push(drawCard());
       myOutputValue += `
     Player's hand: ${formatCards(playerCards)}<br>
     Dealer's hand: ${formatCards(dealerCards)}<br><br>
+    <b>${inGameInstructions}</b>
     `;
     } else {
       // Check if dealer's hand is below 17
@@ -280,7 +283,9 @@ var main = function (input) {
         dealerCards.push(drawCard());
       }
       // compare whose hand has bigger sum of ranks
-      myOutputValue += determineWinner(playerCards, dealerCards);
+      myOutputValue += `
+      ${determineWinner(playerCards, dealerCards)}
+      `;
       mode = "start";
     }
   }
