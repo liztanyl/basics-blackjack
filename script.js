@@ -123,6 +123,7 @@ var newGame = function () {
   if (didAnyoneBlackjack(playerCards, dealerCards)) {
     return whoGotBlackjack(playerCards, dealerCards);
   }
+  mode = "play";
   return "";
 };
 
@@ -132,12 +133,13 @@ var drawCard = function () {
   return card;
 };
 
-// Function to check if hand is blackjack (Ace & 10/J/Q/K)
+// Function to check if hand is blackjack (Ace & 10/J/Q/K || Ace & Ace)
 var checkForBlackjack = function (hand) {
   console.log("Checking if hand is blackjack");
   if (
-    (hand[0].value == 1 || hand[1].value == 1) &&
-    (hand[0].value == 10 || hand[1].value == 10)
+    ((hand[0].value == 1 || hand[1].value == 1) &&
+      (hand[0].value == 10 || hand[1].value == 10)) ||
+    (hand[0].value == 1 && hand[1].value == 1)
   ) {
     return true;
   } else {
@@ -183,6 +185,18 @@ var sumHand = function (hand) {
     return previousCard + currentCard.value;
   };
   var sum = hand.reduce(reducerFn, 0);
+
+  // Check if there's an Ace in hand
+  var haveAceInHand = false;
+  for (var i = 0; i < hand.length; i += 1) {
+    if (hand[i].name == "A") {
+      haveAceInHand = true;
+    }
+  }
+  if (haveAceInHand && sum <= 11) {
+    sum += 10;
+  }
+
   return sum;
 };
 
@@ -205,7 +219,7 @@ var doesDealerNeedToDraw = function (sumOfDealersHand) {
 };
 
 // Function to compare sums of hands
-var compareHands = function (player, dealer) {
+var determineWinner = function (player, dealer) {
   var playerHand = sumHand(player);
   var dealerHand = sumHand(dealer);
   console.log("Player's hand: ", playerCards, "(Sum: ", playerHand, ")");
@@ -253,9 +267,7 @@ var main = function (input) {
     Dealer's hand: ${formatCards(dealerCards)}<br><br>
     ${msg}
     `;
-
-    mode = "play";
-  } else if (mode == "play") {
+  } else {
     if (input == "hit") {
       playerCards.push(drawCard());
       myOutputValue += `
@@ -268,7 +280,7 @@ var main = function (input) {
         dealerCards.push(drawCard());
       }
       // compare whose hand has bigger sum of ranks
-      myOutputValue += compareHands(playerCards, dealerCards);
+      myOutputValue += determineWinner(playerCards, dealerCards);
       mode = "start";
     }
   }
