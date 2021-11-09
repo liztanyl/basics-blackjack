@@ -23,6 +23,12 @@ var dealerCards = [];
 var mode = "start";
 var inGameInstructions = `Enter 'd' to draw a card or just click submit to play with your current cards.`;
 
+var imgDraw = `<img src="https://c.tenor.com/Rf1K1QABkD4AAAAC/oh-i-guess-were-both-right-jake-peralta.gif">`;
+var imgPlayerBlackJack = `<img src="https://c.tenor.com/5AngVaJZT0wAAAAC/bingpot-raymond-holt.gif">`;
+var imgDealerBlackJack = `<img src="https://c.tenor.com/R1uZNeUTXgcAAAAC/nooooooo-stephanie-beatriz.gif">`;
+var imgPlayerWin = `<img src="https://c.tenor.com/ngX8VJeKqqwAAAAC/dance-captain-ray-holt.gif">`;
+var imgDealerWin = `<img src="https://c.tenor.com/KT8SeKgTMVMAAAAC/angry-charles-boyle.gif">`;
+
 // ************************ Functions ************************
 // Function to create deck
 var createDeck = function () {
@@ -123,10 +129,13 @@ var newGame = function () {
   dealerCards.push(drawCard());
   // Should already check for blackjack here!
   if (didAnyoneBlackjack(playerCards, dealerCards)) {
-    startMsg = whoGotBlackjack(playerCards, dealerCards);
+    startMsg = `${whoGotBlackjack(playerCards, dealerCards)}<br><br>
+    Hit submit to play again!`;
+    return startMsg;
+  } else {
+    mode = "play";
+    return startMsg;
   }
-  mode = "play";
-  return startMsg;
 };
 
 // Function to draw card from deck
@@ -139,8 +148,8 @@ var drawCard = function () {
 var checkForBlackjack = function (hand) {
   console.log("Checking if hand is blackjack");
   if (
-    ((hand[0].value == 1 || hand[1].value == 1) &&
-      (hand[0].value == 10 || hand[1].value == 10)) ||
+    (hand[0].value == 1 && hand[1].value == 10) ||
+    (hand[0].value == 10 && hand[1].value == 1) ||
     (hand[0].value == 1 && hand[1].value == 1)
   ) {
     return true;
@@ -166,17 +175,17 @@ var whoGotBlackjack = function (player, dealer) {
   // If player got blackjack, and dealer also blackjack - tie
   if (checkForBlackjack(player) && checkForBlackjack(dealer)) {
     console.log("Both players got blackjack");
-    return `It's a tie! Both player and dealer had blackjack.`;
+    return `BlackIt's a tie! Both player and dealer had blackjack. <br><br> ${imgDraw}`;
   }
   // If player has blackjack but dealer doesn't
   else if (checkForBlackjack(player)) {
     console.log("Player's hand is blackjack");
-    return `Player has blackjack. Player wins!`;
+    return `Player has blackjack. Player wins! <br><br> ${imgDraw}`;
   }
   // If dealer has blackjack but player doesn't
   else {
     console.log("Dealer's hand is blackjack");
-    return `Dealer has blackjack. Player loses!`;
+    return `Dealer has blackjack. Player loses! <br><br> ${imgDraw}`;
   }
 };
 
@@ -238,21 +247,21 @@ var determineWinner = function (player, dealer) {
     (didHandBust(playerHand) && didHandBust(dealerHand)) ||
     playerHand == dealerHand
   ) {
-    result += `<b>It's a draw!</b>`;
+    result += `<b>It's a draw!</b> <br><br> ${imgDraw}`;
   }
   // Player wins if player doesn't bust AND dealer busts or if player's hand is closer to 21
   else if (
     !didHandBust(playerHand) &&
     (playerHand > dealerHand || didHandBust(dealerHand))
   ) {
-    result += `<b>Player wins!</b>`;
+    result += `<b>Player wins!</b> <br><br> ${imgPlayerWin}`;
   }
   // Player loses if dealer doesn't bust AND player busts or if dealer's hand is closer to 21
   else if (
     !didHandBust(dealerHand) &&
     (playerHand < dealerHand || didHandBust(playerHand))
   ) {
-    result += `<b>Dealer wins!</b>`;
+    result += `<b>Dealer wins!</b> <br><br> ${imgDealerWin}`;
   }
   return result;
 };
