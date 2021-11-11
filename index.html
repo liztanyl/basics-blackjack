@@ -182,29 +182,58 @@
     </h1>
     <h1 class="header">♣️ Basics - Blackjack ♠️</h1>
     <div id="container">
-      <p>Input:</p>
+      <!-- <p>Input:</p>
       <input id="input-field" />
-      <br />
-      <button id="submit-button">Submit</button>
-      <p>Output:</p>
-      <div id="output-div">Welcome! Hit Submit to start playing blackjack.</div>
+      <br /> -->
+      <button id="start-btn">Start Game</button>
+      <button id="hit-btn">Draw a Card</button>
+      <button id="stand-btn">End Turn</button>
+      <div id="output-div">Welcome! Ready for some blackjack?</div>
     </div>
     <!-- Import program logic -->
     <script src="script.js"></script>
     <!-- Define button click functionality -->
     <script>
-      var button = document.querySelector("#submit-button");
-      button.addEventListener("click", function () {
+      if (mode == "start") {
+        document.getElementById("hit-btn").disabled = true;
+        document.getElementById("stand-btn").disabled = true;
+      }
+      var startBtn = document.querySelector("#start-btn");
+      startBtn.addEventListener("click", function () {
         // Set result to input value
-        var input = document.querySelector("#input-field");
-        var result = main(input.value);
+        // var input = document.querySelector("#input-field");
+        // var result = main(input.value);
 
         // Display result in output element
         var output = document.querySelector("#output-div");
-        output.innerHTML = result;
+        output.innerHTML = start();
 
-        // Reset input value
-        input.value = "";
+        // // Reset input value
+        // input.value = "";
+        if (mode == "start") {
+          document.getElementById("start-btn").disabled = false;
+          document.getElementById("hit-btn").disabled = true;
+          document.getElementById("stand-btn").disabled = true;
+        } else {
+          document.getElementById("start-btn").disabled = true;
+          document.getElementById("hit-btn").disabled = false;
+          document.getElementById("stand-btn").disabled = false;
+        }
+      });
+      var hitBtn = document.querySelector("#hit-btn");
+      hitBtn.addEventListener("click", function () {
+        var output = document.querySelector("#output-div");
+        output.innerHTML = hit();
+      });
+      var standBtn = document.querySelector("#stand-btn");
+      standBtn.addEventListener("click", function () {
+        var output = document.querySelector("#output-div");
+        output.innerHTML = stand();
+        if (mode == "start") {
+          document.getElementById("start-btn").disabled = false;
+          document.getElementById("hit-btn").disabled = true;
+          document.getElementById("stand-btn").disabled = true;
+        }
       });
     </script>
   </body>
