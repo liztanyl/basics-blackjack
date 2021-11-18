@@ -21,10 +21,14 @@ var playerCards = [];
 var dealerCards = [];
 
 var mode = "start";
+var chips = 100;
+var currentBet = 0;
 
 // Formatted text
-var HTMLdealer = `<b>DEALER'S CARDS</b>`;
-var HTMLplayer = `<b>YOUR CARDS</b>`;
+var currentBetMsg = `Your bet: ${currentBet} chips.<br><br>`;
+var currentChipsMsg = `You have ${chips} chips.<br><br>`;
+var HTMLdealer = `<b>DEALER'S CARDS</b><br><br>`;
+var HTMLplayer = `<b>YOUR CARDS</b><br><br>`;
 
 // Text for instructions
 var inGameInstructions = `<b>Draw a card or click 'End Turn' to play with your current cards.</b>`;
@@ -37,7 +41,10 @@ var imgDealerBlackJack = `<img src="https://c.tenor.com/R1uZNeUTXgcAAAAC/noooooo
 var imgPlayerWin = `<img src="https://c.tenor.com/ngX8VJeKqqwAAAAC/dance-captain-ray-holt.gif">`;
 var imgDealerWin = `<img src="https://c.tenor.com/KT8SeKgTMVMAAAAC/angry-charles-boyle.gif">`;
 
-// ************************ Functions ************************
+//
+// ******************** Helper Functions ********************
+//
+
 // Function to create deck
 var createDeck = function () {
   var cardDeck = [];
@@ -103,129 +110,11 @@ var shuffleCards = function (cardDeck) {
   return cardDeck;
 };
 
-// Function to format cards in hand
-var formatCards = function (cardArray) {
-  // Create a loop to add each card name and card suit to the return value
-  var msgWithFormattedCards = "";
-  for (var i = 0; i < cardArray.length; i++) {
-    msgWithFormattedCards += `&nbsp; [ ${cardArray[i].name}${cardArray[i].suit} ] `;
-  }
-  return msgWithFormattedCards;
-};
-
-// Function to format dealer's cards and hide first card
-var formatCardsHidden = function (cardArray) {
-  // First card is hidden
-  var msgWithFormattedCards = `&nbsp; [ ❔ ] &nbsp; [ ${cardArray[1].name}${cardArray[1].suit} ] `;
-  return msgWithFormattedCards;
-};
-
-var showCards = function (player, dealer) {
-  return `${HTMLdealer}<br><br>
-  ${formatCards(dealer)}<br>
-  (${sumHand(dealer)} points)<br><br>
-  ${HTMLplayer}<br><br>
-  ${formatCards(player)}<br>
-  (${sumHand(player)} points)<br><br>`;
-};
-
 // Function to reset deck and player's & dealer's cards to empty arrays
 var resetGame = function () {
   deck = [];
   playerCards = [];
   dealerCards = [];
-};
-
-// Function to start game
-var newGame = function () {
-  resetGame();
-  // Create, shuffle deck & give out 2 cards each----
-  var newDeck = createDeck();
-  deck = shuffleCards(newDeck);
-  // deal to Player & Dealer (alternate)
-  playerCards.push(drawCard());
-  dealerCards.push(drawCard());
-  playerCards.push(drawCard());
-  dealerCards.push(drawCard());
-  // dealerCards.push({ name: "A", suit: "♠", rank: 1, value: 1 });
-  // dealerCards.push({name: 'J', suit: '♣', rank: 11, value: 10});
-
-  var startMsg = `${HTMLdealer}<br><br>
-  ${formatCardsHidden(dealerCards)}<br><br>
-  ${HTMLplayer}<br><br>
-  ${formatCards(playerCards)}<br>
-  `;
-  // Check for blackjack ----------------------------
-  if (didAnyoneBlackjack(playerCards, dealerCards)) {
-    startMsg = `${whoGotBlackjack(playerCards, dealerCards)}`;
-    return startMsg;
-  }
-  // Check if user's hand is below 17 ---------------
-  else if (needToDrawCard(sumHand(playerCards))) {
-    mode = "play";
-    startMsg += `(${sumHand(playerCards)} points)<br><br>
-    ${inGameInstructionsBelow17}`;
-  } else {
-    mode = "play";
-    startMsg += `(${sumHand(playerCards)} points)<br><br>
-    ${inGameInstructions}`;
-  }
-  return startMsg;
-};
-
-// Function to draw card from deck
-var drawCard = function () {
-  var card = deck.pop();
-  return card;
-};
-
-// Function to check if hand is blackjack (Ace & 10/J/Q/K || Ace & Ace)
-var checkForBlackjack = function (hand) {
-  console.log("Checking if hand is blackjack");
-  if (
-    (hand[0].value == 1 && hand[1].value == 10) ||
-    (hand[0].value == 10 && hand[1].value == 1) ||
-    (hand[0].value == 1 && hand[1].value == 1)
-  ) {
-    return true;
-  } else {
-    return false;
-  }
-};
-
-// Function to see if either player or dealer has blackjack
-var didAnyoneBlackjack = function (player, dealer) {
-  // If both not blackjack, return false
-  if (!checkForBlackjack(player) && !checkForBlackjack(dealer)) {
-    console.log("Nobody got blackjack");
-    return false;
-  } else {
-    return true;
-  }
-};
-
-// Function to determine who is the one with blackjack
-var whoGotBlackjack = function (player, dealer) {
-  console.log("Someone got blackjack");
-  var cardMsg = showCards(player, dealer);
-  // If player got blackjack, and dealer also blackjack - tie
-  if (checkForBlackjack(player) && checkForBlackjack(dealer)) {
-    console.log("Both players got blackjack");
-    cardMsg += `It's a tie! Both player and dealer had blackjack. <br><br> 
-    ${imgDraw}`;
-  }
-  // If player has blackjack but dealer doesn't
-  else if (checkForBlackjack(player)) {
-    console.log("Player's hand is blackjack");
-    cardMsg += `You got blackjack. You win! <br><br> ${imgPlayerBlackJack}`;
-  }
-  // If dealer has blackjack but player doesn't
-  else if (checkForBlackjack(dealer)) {
-    console.log("Dealer's hand is blackjack");
-    cardMsg += `<b>Dealer has blackjack. Dealer wins!</b><br><br> 
-    ${imgDealerBlackJack}`;
-  }
-  return cardMsg;
 };
 
 // Function to sum ranks of cards in hand
@@ -268,6 +157,148 @@ var needToDrawCard = function (sumOfHand) {
   }
 };
 
+// Function to draw card from deck
+var drawCard = function () {
+  var card = deck.pop();
+  return card;
+};
+
+// Function to check if hand is blackjack (Ace & 10/J/Q/K || Ace & Ace)
+var checkForBlackjack = function (hand) {
+  console.log("Checking if hand is blackjack");
+  if (
+    (hand[0].value == 1 && hand[1].value == 10) ||
+    (hand[0].value == 10 && hand[1].value == 1) ||
+    (hand[0].value == 1 && hand[1].value == 1)
+  ) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+// Function to see if either player or dealer has blackjack
+var didAnyoneBlackjack = function (player, dealer) {
+  // If both not blackjack, return false
+  if (!checkForBlackjack(player) && !checkForBlackjack(dealer)) {
+    console.log("Nobody got blackjack");
+    return false;
+  } else {
+    return true;
+  }
+};
+
+//
+// ******************** Formatting Functions ********************
+//
+
+// Function to show current bet
+var updateBetMsg = function (bet) {
+  currentBetMsg = `Your bet: ${bet} chips.<br><br>`;
+};
+
+// Function to show current bet
+var updateChipsMsg = function (chipsLeft) {
+  currentChipsMsg = `You have ${chipsLeft} chips.<br><br>`;
+};
+
+// Function to format cards in hand
+var formatCards = function (cardArray) {
+  // Create a loop to add each card name and card suit to the return value
+  var msgWithFormattedCards = "";
+  for (var i = 0; i < cardArray.length; i++) {
+    msgWithFormattedCards += `&nbsp; [ ${cardArray[i].name}${cardArray[i].suit} ] `;
+  }
+  return `${msgWithFormattedCards}<br>
+    (${sumHand(cardArray)} points)<br><br>`;
+};
+
+// Function to format dealer's cards and hide first card
+var formatCardsHidden = function (cardArray) {
+  // First card is hidden
+  var msgWithFormattedCards = `&nbsp; [ ❔ ] &nbsp; [ ${cardArray[1].name}${cardArray[1].suit} ] <br><br>`;
+  return msgWithFormattedCards;
+};
+
+var showCards = function (player, dealer) {
+  return `
+  ${currentBetMsg}
+  ${HTMLdealer}
+  ${formatCards(dealer)}
+  ${HTMLplayer}
+  ${formatCards(player)}`;
+};
+
+//
+// ******************** Main Functions ********************
+//
+
+// Function to start game
+var newGame = function () {
+  resetGame();
+  // Create, shuffle deck & give out 2 cards each----
+  var newDeck = createDeck();
+  deck = shuffleCards(newDeck);
+  // deal to Player & Dealer (alternate)
+  playerCards.push(drawCard());
+  dealerCards.push(drawCard());
+  playerCards.push(drawCard());
+  dealerCards.push(drawCard());
+  // dealerCards.push({ name: "A", suit: "♠", rank: 1, value: 1 });
+  // dealerCards.push({name: 'J', suit: '♣', rank: 11, value: 10});
+
+  var startMsg = `${currentBetMsg}
+  ${HTMLdealer}
+  ${formatCardsHidden(dealerCards)}
+  ${HTMLplayer}
+  ${formatCards(playerCards)}
+  `;
+  // Check for blackjack ----------------------------
+  if (didAnyoneBlackjack(playerCards, dealerCards)) {
+    startMsg = `${whoGotBlackjack(playerCards, dealerCards)}`;
+    return startMsg;
+  }
+  // Check if user's hand is below 17 ---------------
+  else if (needToDrawCard(sumHand(playerCards))) {
+    mode = "play";
+    startMsg += `${inGameInstructionsBelow17}`;
+  } else {
+    mode = "play";
+    startMsg += `${inGameInstructions}`;
+  }
+  return startMsg;
+};
+
+// Function to determine who is the one with blackjack
+var whoGotBlackjack = function (player, dealer) {
+  console.log("Someone got blackjack");
+  var cardMsg = showCards(player, dealer);
+  // If player got blackjack, and dealer also blackjack - tie
+  if (checkForBlackjack(player) && checkForBlackjack(dealer)) {
+    console.log("Both players got blackjack");
+    cardMsg += `It's a tie! Both player and dealer had blackjack. <br><br> 
+    ${imgDraw}`;
+  }
+  // If player has blackjack but dealer doesn't
+  else if (checkForBlackjack(player)) {
+    console.log("Player's hand is blackjack");
+    chips += currentBet;
+    cardMsg += `You got blackjack. You win! <br><br> ${imgPlayerBlackJack}`;
+  }
+  // If dealer has blackjack but player doesn't
+  else if (checkForBlackjack(dealer)) {
+    console.log("Dealer's hand is blackjack");
+    chips -= currentBet;
+    cardMsg += `<b>Dealer has blackjack. Dealer wins!</b><br><br> 
+    ${imgDealerBlackJack}`;
+  }
+
+  updateChipsMsg(chips);
+
+  return `${cardMsg} <br>
+  ${currentChipsMsg}`;
+};
+
 // Function to compare sums of hands
 var determineWinner = function (player, dealer) {
   var playerHand = sumHand(player);
@@ -276,6 +307,7 @@ var determineWinner = function (player, dealer) {
   console.log("Dealer's hand: ", dealerCards, "(Sum: ", dealerHand, ")");
 
   var result = showCards(player, dealer);
+
   // Tie if both hands bust or if sumOfHands are the same
   if (
     (didHandBust(playerHand) && didHandBust(dealerHand)) ||
@@ -288,6 +320,7 @@ var determineWinner = function (player, dealer) {
     !didHandBust(playerHand) &&
     (playerHand > dealerHand || didHandBust(dealerHand))
   ) {
+    chips += currentBet;
     result += `<b>You win!</b> <br><br> ${imgPlayerWin}`;
   }
   // Player loses if dealer doesn't bust AND player busts or if dealer's hand is closer to 21
@@ -295,15 +328,28 @@ var determineWinner = function (player, dealer) {
     !didHandBust(dealerHand) &&
     (playerHand < dealerHand || didHandBust(playerHand))
   ) {
+    chips -= currentBet;
     result += `<b>Dealer wins!</b> <br><br> ${imgDealerWin}`;
   }
-  return result;
+
+  updateChipsMsg(chips);
+
+  return `${result} <br>
+  ${currentChipsMsg}`;
 };
 
-var start = function () {
+//
+// ******************** Button Functions ********************
+//
+
+var start = function (inputBet) {
+  // If no bet is input, use same bet as before
+  if (inputBet != null) {
+    currentBet = Number(inputBet);
+    updateBetMsg(currentBet);
+  }
   // start game & check if anyone has blackjack
   var msg = newGame();
-
   return msg;
 };
 
@@ -311,11 +357,11 @@ var start = function () {
 // If player wants to draw card
 var hit = function () {
   playerCards.push(drawCard());
-  var myOutputValue = `${HTMLdealer}<br><br>
-  ${formatCardsHidden(dealerCards)}<br><br>
-  ${HTMLplayer}<br><br>
-  ${formatCards(playerCards)}<br>
-  (${sumHand(playerCards)} points)<br><br>
+  var myOutputValue = `Your bet: ${currentBet} chips.<br><br>
+  ${HTMLdealer}
+  ${formatCardsHidden(dealerCards)}
+  ${HTMLplayer}
+  ${formatCards(playerCards)}
   `;
 
   if (needToDrawCard(sumHand(playerCards))) {
@@ -328,11 +374,10 @@ var hit = function () {
 
 var stand = function () {
   // If player wants to stand
-  var myOutputValue = `${HTMLdealer}<br><br>
-  ${formatCardsHidden(dealerCards)}<br><br>
-  ${HTMLplayer}<br><br>
-  ${formatCards(playerCards)}<br>
-  (${sumHand(playerCards)} points)<br><br>
+  var myOutputValue = `${HTMLdealer}
+  ${formatCardsHidden(dealerCards)}
+  ${HTMLplayer}
+  ${formatCards(playerCards)}
   `;
 
   // Input validation

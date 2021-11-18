@@ -134,7 +134,8 @@
       }
 
       input {
-        font-size: 21px;
+        font-size: 1em;
+        text-align: center;
         line-height: 33px;
         margin: 0 0 23px 0;
         padding: 0 9px;
@@ -195,36 +196,48 @@
     </h1>
     <h1 class="header">♣️ Basics - Blackjack ♠️</h1>
     <div id="container">
-      <!-- <p>Input:</p>
-      <input id="input-field" />
-      <br /> -->
-      <button id="start-btn">Start Game</button>
-      <button id="hit-btn">Draw a Card</button>
-      <button id="stand-btn">End Turn</button>
       <div id="output-div">
         Welcome! Ready for some blackjack?<br /><br />
         <img
           src="https://c.tenor.com/0uvxzEAUrfoAAAAC/its-time-for-a-bet-bet.gif"
         />
+        <br />
+        You have 100 chips.
+        <br /><br />
+        <input
+          id="input-field"
+          placeholder="How much would you like to bet?"
+          style="width: 355px"
+        />
       </div>
+      <br />
+      <button id="start-btn">Start Game</button>
+      <button id="hit-btn">Draw a Card</button>
+      <button id="stand-btn">End Turn</button>
     </div>
     <!-- Import program logic -->
     <script src="script.js"></script>
     <!-- Define button click functionality -->
     <script>
       if (mode == "start") {
+        // document.getElementById("input-field").hidden = true;
         document.getElementById("hit-btn").disabled = true;
         document.getElementById("stand-btn").disabled = true;
       }
+      // Start button
       var startBtn = document.querySelector("#start-btn");
       startBtn.addEventListener("click", function () {
         // Set result to input value
-        // var input = document.querySelector("#input-field");
-        // var result = main(input.value);
+        var input = document.querySelector("#input-field");
+        if (input == null || input.value == "") {
+          var result = start();
+        } else {
+          var result = start(input.value);
+        }
 
         // Display result in output element
         var output = document.querySelector("#output-div");
-        output.innerHTML = start();
+        output.innerHTML = result;
 
         // // Reset input value
         // input.value = "";
@@ -238,11 +251,13 @@
           document.getElementById("stand-btn").disabled = false;
         }
       });
+      // Hit button
       var hitBtn = document.querySelector("#hit-btn");
       hitBtn.addEventListener("click", function () {
         var output = document.querySelector("#output-div");
         output.innerHTML = hit();
       });
+      // Stand button
       var standBtn = document.querySelector("#stand-btn");
       standBtn.addEventListener("click", function () {
         var output = document.querySelector("#output-div");
