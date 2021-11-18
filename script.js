@@ -188,6 +188,14 @@ var didAnyoneBlackjack = function (player, dealer) {
   }
 };
 
+// Function to end game if player has no more chips
+var checkForChips = function () {
+  if (chips <= 0) {
+    currentChipsMsg = `You're out of chips!`;
+    mode = "end";
+  }
+};
+
 //
 // ******************** Formatting Functions ********************
 //
@@ -294,6 +302,7 @@ var whoGotBlackjack = function (player, dealer) {
   }
 
   updateChipsMsg(chips);
+  checkForChips();
 
   return `${cardMsg} <br>
   ${currentChipsMsg}`;
@@ -332,7 +341,10 @@ var determineWinner = function (player, dealer) {
     result += `<b>Dealer wins!</b> <br><br> ${imgDealerWin}`;
   }
 
+  mode = "start";
+
   updateChipsMsg(chips);
+  checkForChips();
 
   return `${result} <br>
   ${currentChipsMsg}`;
@@ -343,14 +355,21 @@ var determineWinner = function (player, dealer) {
 //
 
 var start = function (inputBet) {
+  var startBetMsg = "";
   // If no bet is input, use same bet as before
-  if (inputBet != null) {
+  if (inputBet > chips) {
+    currentBet = chips;
+    updateBetMsg(currentBet);
+    startBetMsg = `You entered ${inputBet}, which exceeds how many chips you have.<br>
+    We'll take it as an All In!<br><br>`;
+  } else if (inputBet != null && !isNaN(Number(inputBet))) {
     currentBet = Number(inputBet);
     updateBetMsg(currentBet);
   }
   // start game & check if anyone has blackjack
   var msg = newGame();
-  return msg;
+  return `${startBetMsg}
+  ${msg}`;
 };
 
 // After cards are dealt (and nobody has blackjack)
@@ -396,6 +415,5 @@ var stand = function () {
   myOutputValue = `
         ${determineWinner(playerCards, dealerCards)}
       `;
-  mode = "start";
   return myOutputValue;
 };

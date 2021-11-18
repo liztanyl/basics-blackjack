@@ -266,6 +266,10 @@
           document.getElementById("start-btn").disabled = false;
           document.getElementById("hit-btn").disabled = true;
           document.getElementById("stand-btn").disabled = true;
+        } else if (mode == "end") {
+          document.getElementById("start-btn").disabled = true;
+          document.getElementById("hit-btn").disabled = true;
+          document.getElementById("stand-btn").disabled = true;
         }
       });
     </script>
