@@ -34,6 +34,14 @@ var HTMLplayer = `<b>YOUR CARDS</b><br><br>`;
 var inGameInstructions = `<b>Draw a card or click 'End Turn' to play with your current cards.</b>`;
 var inGameInstructionsBelow17 = `<b>You need minimum 17 points to play. Please draw a card.</b>`;
 
+// HTML for input button
+var fieldForBet = `
+<input
+  id="input-field"
+  placeholder="How much would you like to bet??"
+  style="width: 355px"
+/>`;
+
 // Images
 var imgDraw = `<img src="https://c.tenor.com/Rf1K1QABkD4AAAAC/oh-i-guess-were-both-right-jake-peralta.gif">`;
 var imgPlayerBlackJack = `<img src="https://c.tenor.com/5AngVaJZT0wAAAAC/bingpot-raymond-holt.gif">`;
@@ -191,7 +199,9 @@ var didAnyoneBlackjack = function (player, dealer) {
 // Function to end game if player has no more chips
 var checkForChips = function () {
   if (chips <= 0) {
-    currentChipsMsg = `You're out of chips!`;
+    currentChipsMsg = `
+      You're out of chips!<br><br>
+      Refresh the page to play again.`;
     mode = "end";
   }
 };
@@ -252,8 +262,11 @@ var newGame = function () {
   dealerCards.push(drawCard());
   playerCards.push(drawCard());
   dealerCards.push(drawCard());
+
+  // playerCards.push(drawCard());
+  // playerCards.push(drawCard());
   // dealerCards.push({ name: "A", suit: "♠", rank: 1, value: 1 });
-  // dealerCards.push({name: 'J', suit: '♣', rank: 11, value: 10});
+  // dealerCards.push({ name: "J", suit: "♣", rank: 11, value: 10 });
 
   var startMsg = `${currentBetMsg}
   ${HTMLdealer}
@@ -284,14 +297,15 @@ var whoGotBlackjack = function (player, dealer) {
   // If player got blackjack, and dealer also blackjack - tie
   if (checkForBlackjack(player) && checkForBlackjack(dealer)) {
     console.log("Both players got blackjack");
-    cardMsg += `It's a tie! Both player and dealer had blackjack. <br><br> 
+    cardMsg += `It's a tie! Both player and dealer had blackjack.<br><br> 
     ${imgDraw}`;
   }
   // If player has blackjack but dealer doesn't
   else if (checkForBlackjack(player)) {
     console.log("Player's hand is blackjack");
     chips += currentBet;
-    cardMsg += `You got blackjack. You win! <br><br> ${imgPlayerBlackJack}`;
+    cardMsg += `You got blackjack. You win!<br><br> 
+    ${imgPlayerBlackJack}`;
   }
   // If dealer has blackjack but player doesn't
   else if (checkForBlackjack(dealer)) {
@@ -304,8 +318,14 @@ var whoGotBlackjack = function (player, dealer) {
   updateChipsMsg(chips);
   checkForChips();
 
-  return `${cardMsg} <br>
-  ${currentChipsMsg}`;
+  if (mode != "end") {
+    return `${cardMsg} <br>
+      ${currentChipsMsg}
+      ${fieldForBet}`;
+  } else {
+    return `${cardMsg} <br>
+      ${currentChipsMsg}`;
+  }
 };
 
 // Function to compare sums of hands
@@ -346,8 +366,14 @@ var determineWinner = function (player, dealer) {
   updateChipsMsg(chips);
   checkForChips();
 
-  return `${result} <br>
-  ${currentChipsMsg}`;
+  if (mode != "end") {
+    return `${result} <br>
+      ${currentChipsMsg}
+      ${fieldForBet}`;
+  } else {
+    return `${result} <br>
+      ${currentChipsMsg}`;
+  }
 };
 
 //
